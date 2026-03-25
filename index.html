@@ -15,8 +15,11 @@
   <div class="ambient-bg" aria-hidden="true"></div>
   <header class="hero">
     <p class="kicker">SP Tours</p>
-    <h1>Advanced Analytics Intelligence Hub</h1>
-    <p class="subtitle">A multi-layered decision dashboard built from your assignment dataset: performance, trends, customer economics, and action-ready insights.</p>
+    <h1 class="hero-title">
+      <span class="title-part title-left">Advanced Analytics</span>
+      <span class="title-part title-right">Intelligence Hub</span>
+    </h1>
+    <p class="subtitle">A multi-layered decision dashboard built from my assignment dataset: performance, trends, customer economics, and action-ready insights. This assignment is guided by <span class="prof-credit">Prof. Pankaj Roy Gupta</span>.</p>
   </header>
 
   <main class="container">
@@ -57,18 +60,22 @@
       <article class="card chart-card">
         <h2>Bookings by Destination</h2>
         <canvas id="bookingsChart"></canvas>
+        <p class="chart-insight" id="bookingsInsight"></p>
       </article>
       <article class="card chart-card">
         <h2>Revenue by Destination</h2>
         <canvas id="revenueChart"></canvas>
+        <p class="chart-insight" id="revenueInsight"></p>
       </article>
       <article class="card chart-card">
         <h2>Status Mix</h2>
         <canvas id="statusChart"></canvas>
+        <p class="chart-insight" id="statusInsight"></p>
       </article>
       <article class="card chart-card">
         <h2>Average Rating by Destination</h2>
         <canvas id="ratingByDestinationChart"></canvas>
+        <p class="chart-insight" id="ratingInsight"></p>
       </article>
     </section>
 
@@ -79,14 +86,17 @@
       <article class="card chart-card wide">
         <h2>Monthly Booking and Revenue Trend</h2>
         <canvas id="monthlyTrendChart"></canvas>
+        <p class="chart-insight" id="monthlyTrendInsight"></p>
       </article>
       <article class="card chart-card wide">
         <h2>Revenue vs Activity Cost</h2>
         <canvas id="revenueVsCostChart"></canvas>
+        <p class="chart-insight" id="revenueVsCostInsight"></p>
       </article>
       <article class="card chart-card wide">
         <h2>Destination Revenue Share and Cumulative Impact</h2>
         <canvas id="paretoChart"></canvas>
+        <p class="chart-insight" id="paretoInsight"></p>
       </article>
     </section>
 
@@ -101,18 +111,22 @@
       <article class="card chart-card">
         <h2>Payment Method Mix</h2>
         <canvas id="paymentMethodChart"></canvas>
+        <p class="chart-insight" id="paymentMethodInsight"></p>
       </article>
       <article class="card chart-card">
         <h2>Product Theme Mix (Derived)</h2>
         <canvas id="productThemeChart"></canvas>
+        <p class="chart-insight" id="productThemeInsight"></p>
       </article>
       <article class="card chart-card">
         <h2>Price Band Distribution (Category View)</h2>
         <canvas id="priceBandChart"></canvas>
+        <p class="chart-insight" id="priceBandInsight"></p>
       </article>
       <article class="card chart-card wide">
         <h2>Destination x Status Drilldown (Stacked)</h2>
         <canvas id="destinationStatusStackChart"></canvas>
+        <p class="chart-insight" id="destinationStatusInsight"></p>
       </article>
       <article class="card heatmap-card wide">
         <h2>Destination-Status Heatmap Drilldown</h2>
@@ -172,7 +186,7 @@ flowchart LR
   </main>
 
   <footer>
-    <p>Static analytics suite powered by your exported dataset, optimized for GitHub Pages deployment.</p>
+    <p>Static analytics suite powered by my expeorted dataset, optimized for GitHub Pages deployment. This assignment is guided by <span class="prof-credit">Prof. Pankaj Roy Gupta</span>.</p>
   </footer>
 
   <script src="data.js"></script>

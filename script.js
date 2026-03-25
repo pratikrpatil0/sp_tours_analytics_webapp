@@ -8,9 +8,23 @@ const resetFilters = document.getElementById("resetFilters");
 const metricsContainer = document.getElementById("metrics");
 const insightsList = document.getElementById("insightsList");
 const statusBanner = document.getElementById("statusBanner");
+const heroTitle = document.querySelector(".hero-title");
 const heatmapContainer = document.getElementById("heatmapContainer");
 const topCustomersTableBody = document.querySelector("#topCustomersTable tbody");
 const destinationDetailTableBody = document.querySelector("#destinationDetailTable tbody");
+const chartInsightElements = {
+  bookings: document.getElementById("bookingsInsight"),
+  revenue: document.getElementById("revenueInsight"),
+  status: document.getElementById("statusInsight"),
+  rating: document.getElementById("ratingInsight"),
+  monthlyTrend: document.getElementById("monthlyTrendInsight"),
+  revenueVsCost: document.getElementById("revenueVsCostInsight"),
+  pareto: document.getElementById("paretoInsight"),
+  paymentMethod: document.getElementById("paymentMethodInsight"),
+  productTheme: document.getElementById("productThemeInsight"),
+  priceBand: document.getElementById("priceBandInsight"),
+  destinationStatus: document.getElementById("destinationStatusInsight")
+};
 
 let trips = [];
 
@@ -26,6 +40,7 @@ let productThemeChart;
 let priceBandChart;
 let destinationStatusStackChart;
 let revealObserver;
+let titleAnimationTimer;
 
 Chart.defaults.color = "#c7dbf7";
 Chart.defaults.borderColor = "rgba(125, 211, 252, 0.15)";
@@ -235,6 +250,23 @@ function averageActivityCost(rows) {
   return rows.reduce((sum, row) => sum + row.activityCost, 0) / rows.length;
 }
 
+function getTopCountEntry(map) {
+  const entries = Object.entries(map || {});
+  if (!entries.length) return null;
+  entries.sort((a, b) => b[1] - a[1]);
+  return { label: entries[0][0], value: entries[0][1] };
+}
+
+function setChartInsight(key, text) {
+  const el = chartInsightElements[key];
+  if (!el) return;
+  el.textContent = text;
+}
+
+function clearChartInsights() {
+  Object.keys(chartInsightElements).forEach((key) => setChartInsight(key, ""));
+}
+
 function renderMetrics(rows) {
   const completed = rows.filter((row) => row.status.toLowerCase() === "completed").length;
   const totalRevenue = rows.reduce((sum, row) => sum + row.payment, 0);
@@ -299,6 +331,106 @@ function renderInsights(rows, destinationStats) {
   ];
 
   insightsList.innerHTML = lines.map((line) => `<li>${line}</li>`).join("");
+}
+
+function renderChartInsights(rows, destinationStats, statusMap, monthly, paymentMix, themeMix, priceBandMix, paretoSorted, cumulativePercent) {
+  const totalRows = rows.length;
+
+  const topBookings = [...destinationStats].sort((a, b) => b.bookings - a.bookings)[0];
+  if (topBookings) {
+    const share = totalRows ? (topBookings.bookings / totalRows) * 100 : 0;
+    setChartInsight("bookings", `${topBookings.destination} leads demand with ${topBookings.bookings} bookings (${share.toFixed(1)}% of current segment).`);
+  } else {
+    setChartInsight("bookings", "No destination booking pattern is available for this filter.");
+  }
+
+  const topRevenue = [...destinationStats].sort((a, b) => b.revenue - a.revenue)[0];
+  const totalRevenue = rows.reduce((sum, row) => sum + row.payment, 0);
+  if (topRevenue) {
+    const share = totalRevenue ? (topRevenue.revenue / totalRevenue) * 100 : 0;
+    setChartInsight("revenue", `${topRevenue.destination} is the largest revenue driver at $${topRevenue.revenue.toFixed(2)} (${share.toFixed(1)}% share).`);
+  } else {
+    setChartInsight("revenue", "No destination revenue concentration is visible under this filter.");
+  }
+
+  const topStatus = getTopCountEntry(statusMap);
+  if (topStatus) {
+    const share = totalRows ? (topStatus.value / totalRows) * 100 : 0;
+    setChartInsight("status", `${topStatus.label} is the dominant lifecycle state with ${topStatus.value} trips (${share.toFixed(1)}%).`);
+  } else {
+    setChartInsight("status", "No status distribution is available for this filter.");
+  }
+
+  const ratedDestinations = destinationStats.filter((row) => row.avgRating > 0);
+  const topRated = [...ratedDestinations].sort((a, b) => b.avgRating - a.avgRating)[0];
+  if (topRated) {
+    setChartInsight("rating", `${topRated.destination} has the highest satisfaction signal with an average rating of ${topRated.avgRating.toFixed(2)}.`);
+  } else {
+    setChartInsight("rating", "No valid rating values are available for destination comparison.");
+  }
+
+  if (monthly.length >= 2) {
+    const peakRevenueMonth = [...monthly].sort((a, b) => b.revenue - a.revenue)[0];
+    const bookingChange = monthly[monthly.length - 1].bookings - monthly[0].bookings;
+    const direction = bookingChange > 0 ? "upward" : bookingChange < 0 ? "downward" : "flat";
+    setChartInsight(
+      "monthlyTrend",
+      `${peakRevenueMonth.monthKey} is the peak revenue month at $${peakRevenueMonth.revenue.toFixed(2)}; booking momentum is ${direction} across the observed period.`
+    );
+  } else if (monthly.length === 1) {
+    setChartInsight("monthlyTrend", `Only ${monthly[0].monthKey} is available in this slice, so trend interpretation is limited.`);
+  } else {
+    setChartInsight("monthlyTrend", "No valid start-date rows are available to build a time trend.");
+  }
+
+  const efficientTrips = rows.filter((row) => row.activityCost > 0 && row.payment >= row.activityCost).length;
+  const efficiencyShare = totalRows ? (efficientTrips / totalRows) * 100 : 0;
+  setChartInsight(
+    "revenueVsCost",
+    `${efficientTrips} of ${totalRows} trips are payment-positive against activity cost (${efficiencyShare.toFixed(1)}%), indicating current pricing efficiency.`
+  );
+
+  const eightyPointIndex = cumulativePercent.findIndex((value) => value >= 80);
+  if (paretoSorted.length) {
+    const destinationsTo80 = eightyPointIndex >= 0 ? eightyPointIndex + 1 : paretoSorted.length;
+    setChartInsight("pareto", `${destinationsTo80} destination(s) contribute roughly 80% of revenue, highlighting where portfolio focus can maximize impact.`);
+  } else {
+    setChartInsight("pareto", "No revenue distribution is available for Pareto interpretation.");
+  }
+
+  const topPaymentMethod = getTopCountEntry(paymentMix);
+  if (topPaymentMethod) {
+    const share = totalRows ? (topPaymentMethod.value / totalRows) * 100 : 0;
+    setChartInsight("paymentMethod", `${topPaymentMethod.label} is the preferred payment channel at ${share.toFixed(1)}% of transactions.`);
+  } else {
+    setChartInsight("paymentMethod", "No payment-method behavior is available for this selection.");
+  }
+
+  const topTheme = getTopCountEntry(themeMix);
+  if (topTheme) {
+    const share = totalRows ? (topTheme.value / totalRows) * 100 : 0;
+    setChartInsight("productTheme", `${topTheme.label} is the strongest demand theme with ${topTheme.value} bookings (${share.toFixed(1)}%).`);
+  } else {
+    setChartInsight("productTheme", "No product-theme signal is available for this segment.");
+  }
+
+  const topPriceBand = getTopCountEntry(priceBandMix);
+  if (topPriceBand) {
+    const share = totalRows ? (topPriceBand.value / totalRows) * 100 : 0;
+    setChartInsight("priceBand", `${topPriceBand.label} pricing dominates the mix with ${topPriceBand.value} bookings (${share.toFixed(1)}%).`);
+  } else {
+    setChartInsight("priceBand", "No pricing-band distribution is available for this filter.");
+  }
+
+  const topCompletion = [...destinationStats].sort((a, b) => b.completionRate - a.completionRate)[0];
+  if (topCompletion) {
+    setChartInsight(
+      "destinationStatus",
+      `${topCompletion.destination} has the strongest execution profile with a ${topCompletion.completionRate.toFixed(1)}% completion rate across ${topCompletion.bookings} bookings.`
+    );
+  } else {
+    setChartInsight("destinationStatus", "No destination-status execution pattern is available.");
+  }
 }
 
 function renderTopCustomers(rows) {
@@ -675,6 +807,7 @@ function renderCharts(rows) {
   );
 
   attachDrilldownClicks(destinationStats, statusMap, paymentMix);
+  renderChartInsights(rows, destinationStats, statusMap, monthly, paymentMix, themeMix, priceBandMix, paretoSorted, cumulativePercent);
   renderInsights(rows, destinationStats);
   renderDestinationTable(destinationStats);
   renderHeatmap(rows);
@@ -718,6 +851,7 @@ function renderDashboard() {
     topCustomersTableBody.innerHTML = "<tr><td colspan='4'>No customer rows available.</td></tr>";
     destinationDetailTableBody.innerHTML = "<tr><td colspan='5'>No destination rows available.</td></tr>";
     heatmapContainer.innerHTML = "<p>No heatmap data available.</p>";
+    clearChartInsights();
     destroyCharts();
     return;
   }
@@ -753,6 +887,32 @@ function initMermaid() {
   }
 }
 
+function triggerHeroTitleAnimation() {
+  if (!heroTitle) return;
+  heroTitle.classList.remove("animate-title");
+  // Force reflow so the CSS animation can restart each cycle.
+  void heroTitle.offsetWidth;
+  heroTitle.classList.add("animate-title");
+}
+
+function setupRecurringTitleAnimation() {
+  if (!heroTitle) return;
+
+  triggerHeroTitleAnimation();
+
+  if (titleAnimationTimer) {
+    clearInterval(titleAnimationTimer);
+  }
+
+  titleAnimationTimer = setInterval(() => {
+    if (!document.hidden) triggerHeroTitleAnimation();
+  }, 6000);
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) triggerHeroTitleAnimation();
+  });
+}
+
 async function init() {
   try {
     trips = await loadTripsFromStaticJson();
@@ -769,6 +929,7 @@ async function init() {
   initFilters();
   setupRevealAnimations();
   initMermaid();
+  setupRecurringTitleAnimation();
   renderDashboard();
 }
 

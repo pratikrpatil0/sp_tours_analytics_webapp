@@ -63,16 +63,52 @@ body::before {
   font-size: 0.78rem;
 }
 
-h1 {
+.hero-title {
   margin: 0.35rem 0 0.55rem;
   font-size: clamp(1.8rem, 4vw, 3.45rem);
   line-height: 1.04;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 0.35ch;
+  row-gap: 0.18em;
+}
+
+.title-part {
+  display: inline-block;
+  opacity: 0;
+  animation-duration: 860ms;
+  animation-fill-mode: forwards;
+  animation-timing-function: cubic-bezier(0.2, 0.85, 0.22, 1);
+}
+
+.title-left {
+  animation-name: none;
+}
+
+.title-right {
+  animation-name: none;
+}
+
+.hero-title.animate-title .title-left {
+  animation-name: titleFromLeftCorner;
+}
+
+.hero-title.animate-title .title-right {
+  animation-name: titleFromRightCorner;
 }
 
 .subtitle {
   margin: 0 auto;
   max-width: 820px;
   color: var(--muted);
+}
+
+.prof-credit {
+  font-size: 1.18em;
+  font-weight: 700;
+  color: #e0f2fe;
+  text-shadow: 0 0 14px rgba(34, 211, 238, 0.34);
 }
 
 .container {
@@ -249,6 +285,17 @@ canvas {
   max-height: 320px;
 }
 
+.chart-insight {
+  margin: 0.8rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-left: 3px solid rgba(34, 211, 238, 0.68);
+  background: rgba(34, 211, 238, 0.08);
+  color: #d7ebff;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  border-radius: 8px;
+}
+
 .insights ul {
   margin: 0;
   padding-left: 1.1rem;
@@ -373,6 +420,28 @@ footer {
   to {
     transform: translate3d(3%, 1.5%, 0) scale(1.08);
     opacity: 1;
+  }
+}
+
+@keyframes titleFromLeftCorner {
+  from {
+    opacity: 0;
+    transform: translate(-28vw, -48px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes titleFromRightCorner {
+  from {
+    opacity: 0;
+    transform: translate(28vw, -48px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
   }
 }
 
