@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SP Tours Advanced Analytics Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ambient-bg" aria-hidden="true"></div>
+  <header class="hero">
+    <p class="kicker">SP Tours</p>
+    <h1>Advanced Analytics Intelligence Hub</h1>
+    <p class="subtitle">A multi-layered decision dashboard built from your assignment dataset: performance, trends, customer economics, and action-ready insights.</p>
+  </header>
+
+  <main class="container">
+    <section class="status card" id="statusBanner">
+      Loading static dataset...
+    </section>
+
+    <section class="controls card">
+      <div>
+        <label for="destinationFilter">Destination</label>
+        <select id="destinationFilter"></select>
+      </div>
+      <div>
+        <label for="statusFilter">Status</label>
+        <select id="statusFilter"></select>
+      </div>
+      <div>
+        <label for="paymentFilter">Payment Method</label>
+        <select id="paymentFilter"></select>
+      </div>
+      <div>
+        <label for="sortBy">Ranking Focus</label>
+        <select id="sortBy">
+          <option value="revenue">Revenue</option>
+          <option value="bookings">Bookings</option>
+          <option value="rating">Rating</option>
+        </select>
+      </div>
+      <button id="resetFilters" type="button">Reset Filters</button>
+    </section>
+
+    <section class="metrics" id="metrics"></section>
+
+    <section class="section-title-wrap">
+      <h2 class="section-title">Performance Overview</h2>
+    </section>
+    <section class="grid">
+      <article class="card chart-card">
+        <h2>Bookings by Destination</h2>
+        <canvas id="bookingsChart"></canvas>
+      </article>
+      <article class="card chart-card">
+        <h2>Revenue by Destination</h2>
+        <canvas id="revenueChart"></canvas>
+      </article>
+      <article class="card chart-card">
+        <h2>Status Mix</h2>
+        <canvas id="statusChart"></canvas>
+      </article>
+      <article class="card chart-card">
+        <h2>Average Rating by Destination</h2>
+        <canvas id="ratingByDestinationChart"></canvas>
+      </article>
+    </section>
+
+    <section class="section-title-wrap">
+      <h2 class="section-title">Trend and Efficiency Analytics</h2>
+    </section>
+    <section class="grid">
+      <article class="card chart-card wide">
+        <h2>Monthly Booking and Revenue Trend</h2>
+        <canvas id="monthlyTrendChart"></canvas>
+      </article>
+      <article class="card chart-card wide">
+        <h2>Revenue vs Activity Cost</h2>
+        <canvas id="revenueVsCostChart"></canvas>
+      </article>
+      <article class="card chart-card wide">
+        <h2>Destination Revenue Share and Cumulative Impact</h2>
+        <canvas id="paretoChart"></canvas>
+      </article>
+    </section>
+
+    <section class="section-title-wrap">
+      <h2 class="section-title">Customer and Actions Intelligence</h2>
+    </section>
+    <section class="grid">
+      <article class="card insights">
+        <h2>Executive Insights</h2>
+        <ul id="insightsList"></ul>
+      </article>
+      <article class="card chart-card">
+        <h2>Payment Method Mix</h2>
+        <canvas id="paymentMethodChart"></canvas>
+      </article>
+      <article class="card chart-card">
+        <h2>Product Theme Mix (Derived)</h2>
+        <canvas id="productThemeChart"></canvas>
+      </article>
+      <article class="card chart-card">
+        <h2>Price Band Distribution (Category View)</h2>
+        <canvas id="priceBandChart"></canvas>
+      </article>
+      <article class="card chart-card wide">
+        <h2>Destination x Status Drilldown (Stacked)</h2>
+        <canvas id="destinationStatusStackChart"></canvas>
+      </article>
+      <article class="card heatmap-card wide">
+        <h2>Destination-Status Heatmap Drilldown</h2>
+        <p class="heatmap-help">Click any heatmap cell to apply destination and status drilldown instantly.</p>
+        <div id="heatmapContainer" class="table-wrap"></div>
+      </article>
+      <article class="card mermaid-card wide">
+        <h2>Analytics Flow UML View</h2>
+        <pre class="mermaid" id="analyticsFlowDiagram">
+flowchart LR
+    A[Raw Snapshot data.json/data.js] --> B[Normalization Layer]
+    B --> C[Filter Engine]
+    C --> D1[KPIs]
+    C --> D2[Performance Charts]
+    C --> D3[Trend Analytics]
+    C --> D4[Customer Intelligence]
+    D1 --> E[Executive Insights]
+    D2 --> E
+    D3 --> E
+    D4 --> E
+        </pre>
+      </article>
+      <article class="card table-card wide">
+        <h2>Top Customers by Total Payment</h2>
+        <div class="table-wrap">
+          <table id="topCustomersTable">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Bookings</th>
+                <th>Total Payment</th>
+                <th>Avg Rating</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="card table-card wide">
+        <h2>Destination Drilldown Table</h2>
+        <div class="table-wrap">
+          <table id="destinationDetailTable">
+            <thead>
+              <tr>
+                <th>Destination</th>
+                <th>Bookings</th>
+                <th>Revenue</th>
+                <th>Avg Rating</th>
+                <th>Completion %</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <p>Static analytics suite powered by your exported dataset, optimized for GitHub Pages deployment.</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
